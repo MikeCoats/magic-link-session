@@ -1,8 +1,11 @@
 {
   "name": "magic-link-session",
-  "version": "0.0.1",
+  "version": "0.1.1",
   "description": "From `/1` to `/login?token=eyJhbGci...`",
   "author": "Mike Coats <mike.coats@nature.scot> (https://github.com/MikeCoats)",
   "repository": "github:Scottish-Natural-Heritage/gulls-health-and-safety",
-  "license": "(MIT OR OGL-UK-3.0)"
+  "license": "(MIT OR OGL-UK-3.0)",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
 }
