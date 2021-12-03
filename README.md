@@ -125,6 +125,8 @@ echo 562 | sha1sum
 ## Hashing IDs - Basic Server
 
 ```js
+const { createHash } = await import("crypto");
+
 app.get("/:sha1", (req, res) => {
   if (req.params.sha1 === undefined) {
     return res.status(403).send({ path: req.url, message: "No sha1 supplied." });
@@ -219,6 +221,40 @@ echo AR/IiI8hKmP4eJSac/K8TA== | openssl enc -d -nosalt -aes-256-cbc -base64 \
     -iv 43C0EE4F2C51403FD6470DDFA4BD8DE3
 
 # 562
+```
+
+---
+
+## Symmetric Key Encryption - Basic Server
+
+```js
+const { createDecipheriv } = await import("crypto");
+
+const key = Buffer.from("7F9DF30A3C4DF8E54FE3BB0FAD250305A1C78C38F890FDA8687E899EFC08688F", "hex" );
+const iv = Buffer.from("43C0EE4F2C51403FD6470DDFA4BD8DE3", "hex");
+
+app.get("/:encryptedId", (req, res) => {
+  if (req.params.encryptedId === undefined) {
+    return res.status(403).send({ path: req.url, message: "No encryptedId supplied." });
+  }
+
+  const aesDecipher = createDecipheriv("aes-256-cbc", key, iv);
+  aesDecipher.update(req.params.encryptedId, "base64");
+  const decryptedId = aesDecipher.final("utf-8");
+
+  const matchingResource = resources.find((resource) => {
+    return `${resource.id}\n` === decryptedId;
+  });
+
+  if (matchingResource === undefined) {
+    return res.status(404).send({ path: req.url, message: "Not found" });
+  }
+
+  return res.send({
+    path: req.url, id: matchingResource.id, message: matchingResource.message
+  });
+});
+
 ```
 
 ---
