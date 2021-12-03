@@ -182,3 +182,72 @@ for ((i=1;i<=999;i++)); do curl http://localhost:3003/`echo $i | sha1sum` | grep
 # {"path":"/7c07ee609ca19ab090f2432ed98fc34f29acc981","id":"218","message":"Hello, hacker!"}
 # {"path":"/8e90f0d493fe29e1b0d57c2bd5fb19876f6ee8be","id":"562","message":"Hello, legitimate user!"}
 ```
+
+---
+
+## Symmetric Key Encryption - Encrypting
+
+```sh
+# Generate a Key and IV from a shared secret password
+
+openssl enc -nosalt -aes-256-cbc -k our_shared_secret_password -P
+
+# ...
+# key=7F9DF30A3C4DF8E54FE3BB0FAD250305A1C78C38F890FDA8687E899EFC08688F
+# iv =43C0EE4F2C51403FD6470DDFA4BD8DE3
+```
+
+```sh
+# Use the Key and IV to encrypt an ID
+
+echo 562 | openssl enc -nosalt -aes-256-cbc -base64 \
+    -K 7F9DF30A3C4DF8E54FE3BB0FAD250305A1C78C38F890FDA8687E899EFC08688F \
+    -iv 43C0EE4F2C51403FD6470DDFA4BD8DE3
+
+# AR/IiI8hKmP4eJSac/K8TA==
+```
+
+---
+
+## Symmetric Key Encryption - Decrypting
+
+```sh
+# Use the Key and IV to decrypt an ID
+
+echo AR/IiI8hKmP4eJSac/K8TA== | openssl enc -d -nosalt -aes-256-cbc -base64 \
+    -K 7F9DF30A3C4DF8E54FE3BB0FAD250305A1C78C38F890FDA8687E899EFC08688F \
+    -iv 43C0EE4F2C51403FD6470DDFA4BD8DE3
+
+# 562
+```
+
+---
+
+## Symmetric Key Encryption - Running and Testing
+
+```sh
+node 04-symmetric-encrypted-ids.mjs
+```
+
+```sh
+curl http://localhost:3004/AR%2FIiI8hKmP4eJSac%2FK8TA%3D%3D
+
+# {"path":"/AR%2FIiI8hKmP4eJSac%2FK8TA%3D%3D","id":"562","message":"Hello, legitimate user!"}
+```
+
+---
+
+## Symmetric Key Encryption - Hacking
+
+```diff
+- AR/IiI8hKmP4eJSac/K8TA==
++ AR/IiI8hKmP4eJSac/K8T1==
+```
+
+```sh
+curl http://localhost:3004/AR%2FIiI8hKmP4eJSac%2FK8T1%3D%3D
+
+# ...
+# >Error: error:06065064:digital envelope routines:EVP_DecryptFinal_ex:bad decrypt
+# ...
+```
